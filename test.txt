@@ -1,0 +1,703 @@
+\section{The encoding selection platform \esp}
+%\begin{figure*}
+%\centering
+%\includegraphics[width=0.8\textwidth]{flowchart.png}
+%\caption{A flowchart to the encoding selection platform}
+%\label{flowchart-figure}
+%\end{figure*}
+
+\begin{figure*}
+\centering
+\scalebox{0.55}{
+\begin{tikzpicture} [node distance=2cm]
+% We will draw our flowchart here
+\node (Encodings) [input] {Encodings};
+\node (Rewrite) [process,below of = Encodings] {Rewrite};
+\node (Rewriting Tools) [system,left of = Rewrite, xshift=-4cm] {Rewriting Tools};
+\node (All Encodings)[result, below of = Rewrite]{All Encodings};
+\node (Instances) [input, right of= All Encodings, xshift= 15cm] {Instances}; 
+\node (Initial Cutoff Time) [input, below of= Instances,xshift= -3cm] {Initial Cutoff Time};
+\node (Cuoff Time Node) [coordinate, on grid,left of = Initial Cutoff Time,xshift= -2cm];
+\node (Collect Performance Data) [process,left of = Initial Cutoff Time,xshift= -6cm] {Collect\\Performance};
+\node (Too Hard?) [process,below of = Collect Performance Data,yshift= -0.6cm] {Too Hard?};
+\node (Third Update?) [process,right of = Too Hard?,xshift= 2cm] {Third\\Update?};
+\node (Exit! Instances Too Hard!) [exit,right of= Third Update?,xshift= 2cm] {Exit!\\Instances\\Too\\Hard!};
+\node (Too Easy) [process,below of = Too Hard?,yshift= -0.6cm] {Too Easy?};
+\node (Exit! Instances Too Easy!) [exit,below of= Exit! Instances Too Hard!,yshift= -0.6cm] {Exit!\\Instances\\Too\\Easy!};
+\node (Performance Data) [result,below of = Too Easy] {Performance\\Data};
+\node (Select Candidate) [process,below left of = Performance Data,yshift=-0.6cm,xshift=-2cm] {Select\\Candidate};
+\node (Select Candidate Node) [coordinate, on grid, below of =Select Candidate,yshift= 0.5cm];
+\node (Selected Performance Data) [result,below of = All Encodings,yshift=-13cm] {Selected\\Performance\\Data};
+\node (Candidate Encodings Group1) [result,right of = Selected Performance Data,xshift=4cm] {Candidate\\Encodings\\Group1};
+\node (Candidate Encodings Group2) [result,right of = Candidate Encodings Group1,xshift=2cm] {Candidate\\Encodings\\Group2};
+\node (Candidate Encodings Group3) [right of = Candidate Encodings Group2,xshift=2cm] {. . .};
+\node (Candidate Encodings Group4) [result,right of = Candidate Encodings Group3,xshift=2cm] {Candidate\\Encodings\\Group4};
+\node (Claspre Feature Generator) [system,below of = Candidate Encodings Group3] {Claspre Feature\\Generator};
+\node (Extract Features) [process,below of =Claspre Feature Generator] {Extract\\Features};
+\node (Extract Features Node) [coordinate, on grid, right of =Extract Features,xshift=4cm,yshift=0cm];
+\node (Features) [result,below of =Extract Features] {Features};
+\node (Domain Features) [input,right of =Features,xshift=2cm] {Domain Features};
+\node (Training Set) [result,left of =Features,xshift=-6cm] {Training Set};
+\node (Validation Set) [result,left of =Training Set,xshift=-4cm] {Validation Set};
+\node (Validation Set Node) [coordinate, on grid,on grid,above of=Validation Set,yshift=-1cm];
+\node (Test Set) [result,left of =Validation Set,xshift=-4cm] {Test Set};
+\node (Build ML) [process,below of =Candidate Encodings Group2,yshift=-6cm] {Build ML};
+\node (ML Models) [result,below of =Build ML] {ML Models};
+\node (Evaluate) [process,left of =ML Models,xshift=-5cm] {Evaluate};
+\node (Solution) [result,below of =Evaluate] {Solution};
+\node (Test) [process,left of =Solution,xshift=-4cm] {Test};
+\node (Test Result) [result,below of =Test] {Test Result};
+
+
+
+\node (input explain) [input,below of=Rewriting Tools, yshift=-5cm] {} ;
+\node [right of =input explain,xshift=0.7cm]{Inputs};
+\node (system explain) [system,below of=input explain] {} ;
+\node [align=center,right of =system explain,xshift=0.7cm]{System\\Tools};
+\node (process explain) [process,below of=system explain] {} ;
+\node [right of =process explain,xshift=0.7cm]{Processes};
+\node (result explain) [result,below of=process explain] {} ;
+\node [align=center,right of =result explain,xshift=0.7cm]{(Intermediate)\\Results};
+\node (error explain) [exit,below of=result explain,minimum size=1.5 cm] {} ;
+\node [align=center,right of =error explain,xshift=0.7cm]{Errors};
+
+
+\draw [arrow]  (Encodings) -- (Rewrite);
+\draw [arrow] (Rewriting Tools) -- (Rewrite);
+\draw [arrow] (Rewrite) -- (All Encodings);
+\draw [arrow] (All Encodings) |-(Collect Performance Data);
+\draw [arrow] (Instances) -|(Collect Performance Data);
+\draw [arrow] (Initial Cutoff Time) --(Collect Performance Data);
+\draw [arrow] (Collect Performance Data) --(Too Hard?);
+\draw [arrow] (Too Hard?)--node[anchor=south,pos=0.2]{Y}(Third Update?);
+\draw [arrow] (Third Update?)--node[anchor=west,pos=0.2]{N}node[anchor=east]{Increase Cutoff}(Cuoff Time Node);
+\draw [arrow] (Third Update?)--node[anchor=south,pos=0.2]{Y}(Exit! Instances Too Hard!);
+\draw [arrow] (Too Hard?)--node[anchor=east,pos=0.2]{N}(Too Easy);
+\draw [arrow] (Too Easy)--node[anchor=south,pos=0.03]{Y}(Exit! Instances Too Easy!);
+\draw [arrow] (Too Easy)--node[anchor=east,pos=0.2]{N}(Performance Data);
+\draw [arrow] (Performance Data)|-(Select Candidate);
+\draw [arrow] (All Encodings)|-(Select Candidate);
+\draw (Select Candidate) -- (Select Candidate Node);
+\draw [arrow] (Select Candidate Node)-|(Selected Performance Data);
+\draw [arrow] (Select Candidate Node)-|(Candidate Encodings Group1);
+\draw [arrow] (Select Candidate Node-|(Candidate Encodings Group1)-|(Candidate Encodings Group2);
+%\draw [arrow] (Select Candidate Node-|(Candidate Encodings Group1)-|(Candidate Encodings Group3);
+\draw [arrow] (Select Candidate Node-|(Candidate Encodings Group1)-|(Candidate Encodings Group4);
+
+\draw [arrow] (Claspre Feature Generator)--(Extract Features);
+\draw (Instances)-|(Extract Features Node);
+\draw [arrow] (Extract Features Node)--(Extract Features);
+\draw [arrow] (Candidate Encodings Group2)|-(Extract Features);
+\draw (Candidate Encodings Group1)|-(Candidate Encodings Group2 |-Extract Features);
+\draw [arrow] (Candidate Encodings Group4)|-(Extract Features);
+\draw [arrow] (Extract Features)--(Features);
+\draw [arrow] (Domain Features)--(Features);
+\draw (Selected Performance Data)--(Validation Set Node) ;
+\draw [arrow](Validation Set Node)--(Validation Set);
+\draw [arrow](Validation Set Node)-|(Test Set);
+\draw [arrow](Validation Set Node)-|(Training Set);
+
+\draw [arrow](Training Set)|-(Build ML);
+\draw [arrow](Features)|-(Build ML);
+\draw [arrow](Build ML)--(ML Models);
+\draw [arrow](ML Models)--(Evaluate);
+\draw [arrow](Validation Set)|-(Evaluate);
+\draw [arrow](Evaluate)--(Solution);
+\draw [arrow](Solution)--(Test);
+\draw [arrow](Test Set)|-(Test);
+\draw [arrow](Test)--(Test Result);
+\draw [arrow](Exit! Instances Too Hard!)--node[anchor=east]{Input new cutoff}(Initial Cutoff Time);
+\draw [arrow](Exit! Instances Too Hard!)-|node[anchor=west,align=center]{Upload\\New\\Instances}(Instances);
+\draw [arrow](Exit! Instances Too Easy!)-|node[anchor=north]{}(Instances);
+%\caption{A flowchart to the encoding selection platform}
+%label{flowchart-figure}
+\end{tikzpicture};
+}
+\caption{A flowchart to the encoding selection platform}
+\label{flowchart-figure}
+\end{figure*}
+
+The flowchart in Figure~\ref{flowchart-figure} shows the architecture and processes involved in the encoding selection platform that we call \esp.
+\textcolor{blue}{The rectangular boxes in bold represent inputs that need to be provided by the user. They include encodings for a problem to be solved, instances of the problem, and domain/application specific  features if available. The regular rectangular boxes represent system tools, which include encoding rewriting tools and \emph{claspre} feature generator\footnote{\emph{claspre} is a sub-component of portfolio answer set solver \emph{claspfolio}; it is available as a stand alone tool at \url{https://potassco.org/labs/claspre/}}~\cite{gekakascsczi11a}. Components shown using diamond shapes denote processes, which include encoding rewriting, performance collection, candidate encoding selection, feature extraction, performance models building based on machine learning, system evaluation, and system test.}
+Components shown using rectangles with rounded corners denote intermediate and final outcomes of several processes supported by the platform. 
+
+
+
+
+We now review the key building blocks of the \esp architecture. Recall that the {\sc esp} platform is designed to assist a user in exploiting the availability of distinct encodings for a problem at hand to improve the performance of ASP on the problem. Improved performance means increased number of instances solved for an application and decreased time spent on these instances. The platform is general purpose and can be applied to arbitrary problems solved by means of ASP. However, any specific use of the \esp tool assumes a concrete problem at hand. In the narrative that follows we write $P$ to refer to a problem that the specific use of \esp targets to improve an ASP solution for. Throughout the paper, we will use two sample problems
+\emph{graph coloring} (GC) and \emph{hamiltonian cycle} (HC) to
+illustrate functions of the building blocks of the \esp architecture.
+
+
+In what follows we explain important aspects of the \esp system in detail. We touch on important components that concern input provided to the system as well as distinct processes within the system. In particular, we describe
+ encodings (input), encoding rewriting tools, encoding candidate generation, instances (input), performance data collection, feature generation, schedule building, machine learing model building, system evaluation, and system testing.
+
+\subsection{Encodings}
+The \esp expects a user to supply at least one (ASP)  encoding  for considered problem~$P$.
+In most cases, the user will supply several encodings for the problem. 
+The supplied encodings are rewritten by means of encoding rewriting tools available in the platform (detailed in Subsection~\ref{sec:encrewr}) and other rewriting tools supplied by the user. The \emph{extended set of encodings} (the input and the ones resulting rewriting) are the basis for further processing that aims to select a subset of no more than six encodings that will be used when solving new instances of problem~$P$. We comment on how performance data guides the selection process implemented in the \esp later in the paper.
+
+%\textcolor{blue}{Users can input any set of equivalent encodings. %without knowing the performance of them. 
+%However, to collect performance data, the \esp needs to run all encodings on all instances. This process often is time consuming. Therefore, the input encodings must be selected with care and those encodings that never or only sporadically outperform others should not be included in the input set. To put it differently, a desirable feature of a set of encodings is \emph{run-time diversity}. A set of encodings exhibits run-time diversity if each encoding in the set outperforms all others on some significant fraction of instances in the instance set. Given a set of encodings (the input ones and those obtained by rewriting), the \esp will automatically select a subset showing the \emph{run-time diversity}. However, since the time needed for performance data collection is often significant, it is a good strategy for the user to perform some preliminary experiments on the effectiveness of the encoding and build an input set encodings so that it shows run-time diversity.}
+%and running ineffective encodings can be time-consuming. Even though the \esp system will select a subset of the available encodings based on effectiveness and run-time diversity. It is recommended to not upload the ineffective encodings. An encoding is \emph{ineffective} if it always performs worse than other encodings on a sufficiently large proportion of hard problem instances. For example, an encoding consisting of many rules implemented with multiply variables is ineffective compared with its equivalent encoding that only uses few variables in rules tuned by optimization techniques such as variable mappings. An encoding is \emph{effective} if it performs better than other encodings on a sufficiently large proportion of problem instances. This does not mean this encoding must solve more instances than others. As long as there are a proportion of instances where this encoding solves faster, it could be considered effective. The larger the proportion is, the more performance gain can be obtained  when we manage to select the best encoding for each instance.}
+%\todo[inline]{Liu, you are describing how the specific  system works. There is no more "subjective". There is something exact that the system implements. What is it? Describe it precisely. }
+%\todo[inline]{\textcolor{blue}{Liu: This 10\% is not implemented in the code, just a recommendation to save time by avoiding running too many ineffective encodings.} }
+%A set of encodings shows \emph{run-time diversity} if each encoding in the set is effective with respect to the other encodings in this set. While the selection is fully automated, given a significant time needed for performance data collection, it is a good strategy for the user to provide encodings that show run-time diversity (this may require some prior ``manual'' experimentation with the encodings by the user).
+
+ To show examples of possible input encodings that the user might supply to the \esp, we consider two well-knonw applications the graph colorability (GC) and the Hamiltonian Cycle (HC) problems. %First, we  present the case of the sample GC domain. Second, we %discuss the HC domain. 
+ The first encoding of the GC problem is presented in Figure~\ref{enc:graphcolor1}.
+ In line 2, this encoding enforces each node to be colored once; in line 4 and 5 it enforces that no adjacent nodes are colored the same.
+ The second encoding of the GC problem is constructed from the one in Figure~\ref{enc:graphcolor1} by dropping its line 2 and including the rules presented in Figure~\ref{enc:graphcolor2}. Thus, these two encodings differ in the way they implement the \emph{chosencolor} generation. They also enforce differently the constraint that {\em each node is to be assigned exactly one color}. %for one color per node and one node per color}. 
+ The first encoding uses a choice rule (line 2) to implement the requirement that each node is assigned exactly one color, while the second encoding uses two constraints to restrict that each node must be colored (line 5) and colored exactly once (line 7 and 8).
+ 
+
+\begin{figure}[H]
+%\begin{figure}[ht]
+\begin{lstlisting}[basicstyle=\ttfamily\small,numbers=left]
+% Guess colors
+{chosenColor(N,C):color(C)}=1:- node(N).
+% No two adjacent nodes have the same color
+:- link(X,Y), X<Y, chosenColor(X,C),
+                   chosenColor(Y,C).
+#show chosenColor/2.
+\end{lstlisting}
+\caption{Graph coloring encoding 1}
+\label{enc:graphcolor1}
+\end{figure}
+
+
+%\begin{algorithm}[tb]
+%\caption{Graph coloring encoding 1}
+%\label{enc:graphcolor1}
+%\% Guess colors.\\
+%\{ chosenColor(N,C) : color(C) \} = 1 :- node(N).\\
+%\% No two adjacent nodes have the same color.\\
+%:- link(X,Y), X$<$Y, chosenColor(X,C), chosenColor(Y,C).\\
+%\#show chosenColor/2.\\
+%\end{algorithm}
+
+%\begin{algorithm}[tb]
+%\caption{Graph coloring encoding 2}
+%\label{enc:graphcolor2}
+%\% Guess colors.\\
+%chosenColor(N,C) $|$ notChosenColor(N,C) :- node(N), \\color(C).\\
+%\% At least one color per node.\\
+%:- node(X), not colored(X).\\
+%colored(X) :- chosenColor(X,$\_$).\\
+%\% Only one color per node.\\
+%:- chosenColor(N,C1), chosenColor(N,C2), C1!=C2.\\
+%\% No two adjacent nodes have the same color.\\
+%:- link(X,Y), X$<$Y, chosenColor(X,C), chosenColor(Y,C).\\
+%\#show chosenColor/2.
+%\end{algorithm}
+
+\begin{figure}[H]
+%\begin{figure}[ht]
+\begin{lstlisting}[basicstyle=\ttfamily\small,numbers=left]
+chosenColor(N,C) | notChosenColor(N,C):- 
+                        node(N), color(C).
+% At least one color per node.
+colored(X):- chosenColor(X,_).
+:- node(X), not colored(X).
+% Only one color per node.
+:- chosenColor(N,C1), chosenColor(N,C2), 
+                                 C1!=C2.
+\end{lstlisting}
+\caption{Part of graph coloring encoding 2}
+\label{enc:graphcolor2}
+\end{figure}
+
+
+\begin{figure}[H]
+%\begin{figure}[ht]
+%{\footnotesize
+%\begin{verbatim}
+\begin{lstlisting}[basicstyle=\ttfamily\small,numbers=left]
+%Generator
+{ hpath(X,Y) : link(X,Y) } =1:-node(X).
+{ hpath(X,Y) : link(X,Y) } =1:-node(Y).
+%Definition of reachability
+reach(X) :- hpath(1,X).
+reach(Y) :- reach(X),hpath(X,Y).
+%test
+:- not reach(X),node(X).
+%show
+#show hpath/2.
+\end{lstlisting}
+%\end{verbatim}
+%}
+\caption{Hamiltonian cycle encoding 1}
+\label{enc:ham1}
+\end{figure}
+
+The first encoding for the HC problem is shown in Figure~\ref{enc:ham1}.
+The first two rules model the requirement that the number of selected edges leaving and entering each node is exactly one. The rules in lines 5 and 6  define the concept of reachability from node 1. Constraint in line 8 guarantees that
+every node is reachable from node 1 by means of selected edges only.
+The second encoding for the HC problem is obtained by replacing line 5 in Figure~\ref{enc:ham1} with the following rule
+\begin{verbatim}
+reach(1).
+\end{verbatim}
+%These encodings only differ in one line that changes the way the %concept of reachability is implemented.
+
+
+\subsection{Encoding rewriting tools}\label{sec:encrewr}
+The current version of the \esp supports a rewriting tool \emph{AAgg}~\cite{aagg20}.
+It is used to  generate additional encodings based on the ones originally provided by the user. 
+The \emph{AAgg} system performs rewritings on non-ground programs.
+The original version of this system described by Dingess and Truszczynski~\shortcite{aagg20} produced rewritings by discovering constraints that could be reformulated by means of cardinality aggregates. The present version, integrated into the platform, also supports rewritings that eliminate some cardinality constraints \cite{isThereADocument}.
+
+%\todo[inline]{does \cite{aagg20} describe what we convey below in more details? If so that has to be stated.} 
+%\todo[inline]{ \textcolor{blue}{Liu: Here I first explain what the original aagg can do, then my extension starts with 'we extended the AAggrewriting tool in three main ways.'}}
+%\textcolor{blue}{We will start with an example  explaining the original work of AAgg in \cite{aagg20} first and continue with its extension of our work later.} 
+To illustrate the original functionality of \emph{AAgg} consider the following simple program that we call {\em AG}. %The following example shows how AAgg introduces aggregate #count to rewrite a counting based normal rule.
+
+\begin{figure}[H]
+%\begin{figure}[ht]
+%{\footnotesize
+%\begin{verbatim}
+\begin{lstlisting}[basicstyle=\ttfamily\small,numbers=left]
+p(1..n). q(1..n).
+{ u(X,Y) } :- p(X), q(Y).
+:- u(X,Y), u(X,Y'), p(X), Y < Y'.
+\end{lstlisting}
+%\end{verbatim}
+%}
+\caption{Sample program AG.}
+\label{enc:aagg_origin}
+\end{figure}
+
+In the encoding in Figure~\ref{enc:aagg_origin}, line 1 specifies the range of values for predicates {\tt p} and {\tt q}. Line~2 uses a choice atom and a binary predicate {\tt u} to generate a subset of the set $\{(X,Y): p(X) \mbox{and}\ q(Y)\}$. Line 3 imposes a constraint that the generated subset of pairs contains no two distinct pairs of the form $(x,y)$ and $(x,y')$. System \emph{AAgg} detects rules such as the one in line 3 and rewrites them in terms of the aggregate {\tt \#count}. Based on the analysis of predicate dependencies, \emph{AAgg} generates one or three alternative encodings. We use the program {AG} to illustrate these alternatives. For this sample program, \emph{AAgg} generates three alternative encodings. We note that the first presented rewriting is possible for arbitrary predicate dependencies. The rewritings illustrated subsequently are available only when  there are no cyclic predicate dependencies involving the predicates subject to counting (because they introduce the negation connective). 
+
+%We now present the details of these encodings. 
+In all three  alternatives an {\em auxiliary} rule
+\begin{verbatim}
+u_proj_Y'(X) :- u(X,Y).
+\end{verbatim}
+is introduced.
+%In the first alternative, rule in line 3  in Figure~\ref{enc:aagg_origin} is replaced by
+%{\footnotesize
+%}%
+The first alternative encoding of sample program AG contains line 1 and line 2 present in Figure~\ref{enc:aagg_origin}, 
+the auxiliary rule, and the following rule 
+\begin{verbatim}
+#false :- p(X); 
+          2 <= #count { Y : u(X,Y) };
+          u_proj_Y'(X).
+\end{verbatim}
+
+The second alternative encoding of sample program AG contains line 1 and line 2 present in Figure~\ref{enc:aagg_origin}, 
+the auxiliary rule, and the following rule 
+\begin{verbatim}
+#false :- p(X); 
+          not #count { Y : u(X,Y) } <2;
+          u_proj_Y'(X).
+\end{verbatim}
+ In this rule, the aggregate {\tt \#count} is negated and used in the ``less than'' relation (if for any {\tt X}, the count of the corresponding {\tt Y}'s would not be less than two, a contradiction would arise).
+ 
+ 
+The third alternative encoding of sample program AG contains line 1 and line 2 present in Figure~\ref{enc:aagg_origin}, 
+the auxiliary rule, and the following rule 
+\begin{verbatim}
+#false :- p(X); 
+          not #count { Y : u(X,Y) } == 0; 
+          not #count { Y : u(X,Y) } == 1; 
+          u_proj_Y'(X).
+\end{verbatim}
+In this rule, a contradiction is enforced if for any {\tt X}, the count of the corresponding {\tt Y}'s is neither zero nor one.
+
+As part of our work on \esp, we expanded the functionality of the original \emph{AAgg}. The new version of \emph{AAgg} extends the original one in three main ways.
+First, the new  \emph{AAgg} performs variable replacement for variables in atoms built with the equality predicate. For example, the following rule 
+
+\begin{verbatim}
+:- q(X,Y), q(X',Y'), X = X', Y < Y'.
+\end{verbatim}
+is replaced by rule
+\begin{verbatim}
+:- q(X,Y), q(X,Y'), Y < Y'.
+\end{verbatim}
+Upon such a replacement an original \emph{AAgg} system applies a rewriting in spirit of the one illustrated in  our running example above.
+
+Second, new \emph{AAgg}  is able to  combine predicates with the same variables into a group and introduce an aggregate to model the constraint. For example, new \emph{AAgg} replaces the following rule
+\begin{verbatim}
+:- p(X,Y),p(X,Y'),q(X,Y),q(X,Y'),
+                    c(X),Y < Y'.
+\end{verbatim}
+with rules 
+\begin{verbatim}
+u_proj_Y'(X) :- p(X,Y), q(X,Y).
+#false :- c(X); 
+          2 <= #count{Y: p(X,Y), q(X,Y)};
+          u_proj_Y'(X).
+\end{verbatim}
+Third, the new \emph{AAgg} can in some cases remove rules with the aggregate {\tt \#count} and replace them with  normal rules such as the one shown in line 3 in Figure \ref{enc:aagg_origin}. 
+%Which means, if no predicate dependency, the normal rule and three forms with aggregate {\tt \#count} are interchangeable.
+
+
+In the future, we will incorporate in the \esp other rewriting tools, such as \emph{Projector}~\cite{nick19} and \emph{Lpopt}~\cite{bic16}.
+
+
+\subsection{Instances}\label{sec:inst}
+Benchmark instances must be provided by the user. They are used to extract data on the performance of a solver on each of the selected encodings, to support feature extraction and to form the training and testing sets used by machine learning tools to build and evaluate encoding performance models.
+
+%\textcolor{blue}{Benchmark instances should be generated with care by users and users may be requested to provide new data set according to the performance data collected by the platform. After users upload their instances and encodings and set an initially estimated cutoff time. The platform starts to perform encodings rewriting and collect performance data while automatically adjusting cutoff time two times according to the hardness of the problems. The platform will continue with next step with a valid dataset or exit with an invalid one. If the system exits, users need to provide a new instance set according to the system failure output. The invalid instance set is a set of instances that are either too easy or too hard.} 
+When a solver can solve an instance in a short amount of time no matter what encoding is used, or when the solver times out no matter what encoding is used, the instance offers no insights that could inform encoding selection. Only instances that are not too easy and not too hard are meaningful. We will refer to such instances as \emph{reasonably hard}. 
+
+The concept of a reasonably hard instance is determined by two parameters, the time $T_e$ specifying when the execution time is long enough not to view an instance as easy, and the time $T_{max}$ specifying the cutoff time. How to select these two parameters depends on the available computing resources, as well as the time budget for solving incoming instances of the problem at hand. It also depends on often subjective view of up to what time limit the user views an instance as solved fast. 
+
+Once the users provide the \esp with the initial set of instances, and the times $T_e$ and $T_{max}$, and once the extended set of encodings is produced by rewriting, the \esp computes the performance data while automatically adjusting cutoff time $T_{max}$ two times, each time doubling it, if too many time-outs occur. The \esp continues with the next step when the collected performance data suggests the current instance set contains a large proportion of instances that are reasonably hard. Otherwise, the \esp exists and informs the user that the current instance set is too easy ot two hard and requests a new instance set adjusted accordingly.
+
+%\textcolor{blue}{Benchmark instances should be generated with care by users and users may be requested to provide new data set according to the performance data collected by the platform. After users upload their instances and encodings and set an initially estimated cutoff time. The platform starts to perform encodings rewriting and collect performance data while automatically adjusting cutoff time two times according to the hardness of the problems. The platform will continue with next step with a valid dataset or exit with an invalid one. If the system exits, users need to provide a new instance set according to the system failure output. The invalid instance set is a set of instances that are either too easy or too hard.} 
+
+We now provide our insights into instance generation/selection process by focusing on graph coloring domain with the goal to utilize the \esp platform for performance tuning on this domain. 
+
+%\todo[inline]{ \textcolor{blue}{Liu: I added in blue to explain early what users need to do}}
+%\todo[inline]{Please revise this section. I completely misread the message that this Section was conveying. Make it clear what the user supplies to platform and then what the platform does with that. At the moment the cut is unclear. After that introduce your case study to illustrate your general description. Describe exactly what are enc1, enc2... in your Table 1; not what they "can be". Table 1 presents data on the specific use case. Precisely describe that use case. After rewriting the section kindly go over it several times to ensure the flow and proper English of the sentences.}
+
+
+%\begin{table}
+%\scriptsize
+%\centering
+%\begin{tabular}{lrrrr}
+%   \toprule
+%    Instance\_id& Time\_enc1& Time\_enc2& Time\_enc3& Time\_enc4\\
+%    \midrule
+%    wheel\_32\_100\_add\_250\_0& 7.741& 6.532& 7.508& 7.468\\
+%    wheel\_32\_100\_add\_250\_1& 7.626& 6.412& 7.396& 7.436\\
+%    wheel\_32\_100\_add\_250\_2& 7.625& 6.596& 7.477& 7.457\\
+%    wheel\_32\_100\_add\_260\_0& 7.853& 7.082& 7.656& 7.62\\
+%    wheel\_32\_100\_add\_260\_1& 7.628& 6.673& 7.385& 7.596\\
+%    wheel\_32\_100\_add\_260\_2& 7.712& 6.394& 7.4& 7.556\\
+%    wheel\_32\_100\_add\_270\_0& 7.741& 6.687& 7.383& 7.487\\
+%    wheel\_32\_100\_add\_270\_1& 7.763& 6.57& 7.503& 7.582\\
+%    wheel\_32\_100\_add\_270\_2& 7.67& 6.734& 7.588& 7.428\\
+%   \bottomrule
+%\end{tabular}
+%\caption{A list of invalid structured dataset for graph coloring problems: dataset1}
+%\label{invalid1}
+%\end{table}
+
+
+\begin{table}
+\scriptsize
+\centering
+\begin{tabular}{lrrrr}
+   \toprule
+    Instance\_id& gc1& gc2& gc3& gc4\\
+    \midrule
+wheel\_31\_100\_add\_5221\_4 & 36.148     & 68.761     & 12.36      & 26.036     \\
+wheel\_31\_100\_add\_5201\_4 & 73.82      & 21.181     & 12.153     & 20.388     \\
+wheel\_31\_100\_add\_5221\_1 & 127.896    & 60.519     & 40.263     & 200        \\
+wheel\_31\_100\_add\_5221\_0 & 10.12      & 62.596     & 20.839     & 131.097    \\
+wheel\_31\_100\_add\_5206\_8 & 172.251    & 52.866     & 25.725     & 9.824      \\
+wheel\_31\_100\_add\_5271\_7 & 40.444     & 200        & 25.842     & 26.062     \\
+wheel\_31\_100\_add\_5256\_1 & 41.038     & 121.091    & 73.82      & 200        \\
+wheel\_31\_100\_add\_5266\_4 & 9.824      & 200        & 159.171    & 172.251    \\
+wheel\_31\_100\_add\_5211\_8 & 191.16     & 26.922     & 200        & 49.766     \\
+wheel\_31\_100\_add\_5231\_6 & 35.056     & 188.418    & 49.678     & 34.571     \\
+wheel\_31\_100\_add\_5221\_5 & 33.322     & 13.465     & 13.322     & 41.814     \\
+wheel\_31\_100\_add\_5256\_9 & 200        & 200        & 51.314     & 192.615    \\
+   \bottomrule
+\end{tabular}
+\caption{A list of valid structured dataset for graph coloring problems: we report runtime for each encoding on these encodings}
+\label{instances:valid}
+\end{table}
+
+Table~\ref{instances:valid} shows performance data collected by running the \emph{gringo/clasp} tools with four encodings of the graph four-colorability problem on several instances of that problem, that is, undirected graphs. In this case, all graphs are generated randomly from a certain space or \emph{model} of graphs. Graphs in the specific model used in this example are built by connecting together a certain number of (disjoint) wheel graphs. (A wheel graph is a cycle with an additional center node connected by edges to all node on the cycle.) The wheels have an odd number of nodes in the main cycle. They are connected in a specific way so that the resulting graph is four-colorable. Graphs in the model also contain a specified number of additional edges between the wheels. In this example, each graph consists of 100 wheel graph based on 31-node cycles. When the number of additional edges is small, the graphs are four-colorable with the probability close to 1. But as the number of additional edges grows, we reach the point (known as the phase transition) when this probability drops quickly and becomes close to 0. In the phase transition region, we not only see graphs for which the problem has a solution and other for which it does not have one. We also observe that the solving time grows and becomes significant.
+
+Table~\ref{instances:valid} shows a selection of instances that are reasonably hard (we took $T_{max}=200$ seconds as the cutoff, and regard the problem easy if it is solved within $T_e=15$ seconds, no matter what encoding we use). %Instances of this type are needed to support machine learning algorithms used by the platform. 
+When building sets of instances one must set the parameters of the model with care. Here, adding fewer edges than 5150 results in instances that are too easy and adding more that 5300 edges in instances that are too hard. 
+
+
+
+
+\nop{
+several instances of the is the valid dataset of processing four different encodings of the graph coloring problem on a particular class of data instances. 
+The first column in the table lists instance id and others
+record the runtime of each encoding on corresponding instances. 
+The instance set in this experiment are structured wheel-based graphs. We first generate a wheel graph consisting of one center node and a certain number of nodes outside.   
+The center node is connected to nodes
+outside and the nodes outside are connected to their neighbors. We generate many of such wheel
+graphs and connect them in a specific way so that the connected graph is still four colorable when the number of nodes outside is odd. Then
+we start adding edges between nodes from different wheels until the final graph is no longer four
+colorable. From instance id, we can find the structure of the instance is controlled by four
+numerical parameters. The first parameter specifies the number of nodes outside a wheel, the
+second represents the number of a wheel, the third one indicates the number of extra added
+edges into the structured wheel graph defined by the first two parameters, and the fourth
+parameter represents the id of the instance in that family of instances. The original wheel-based
+graph is always SAT and typically easy to solve. With only a few edges added to the original graphs,
+solving such instances is also easy because all instances are still easily SAT. 
+%The dataset1 shows the performance of four different encodings when there are not enough added edges. 
+In such case, encoding selection is not necessary as any encoding can solve an instance within few seconds.
+%\begin{table}
+%\scriptsize
+%\centering
+%\begin{tabular}{lrrrr}
+%   \toprule
+%    Instance\_id& Time\_enc1& Time\_enc2& Time\_enc3& Time\_enc4\\
+%    \midrule
+%wheel\_31\_100\_add\_5350\_0 & 200        & 200        & 200        & 200        \\
+%wheel\_31\_100\_add\_5350\_1 & 200        & 200        & 200        & 200        \\
+%wheel\_31\_100\_add\_5400\_0 & 200        & 200        & 200        & 200        \\
+%wheel\_31\_100\_add\_5400\_1 & 200        & 200        & 200        & 200        \\
+%wheel\_31\_100\_add\_5450\_0 & 200        & 200        & 200        & 200        \\
+%wheel\_31\_100\_add\_5450\_1 & 200        & 200        & 200        & 200        \\
+%wheel\_31\_100\_add\_5500\_0 & 200        & 200        & 200        & 200        \\
+%wheel\_31\_100\_add\_5500\_1 & 200        & 200        & 200        & 200        \\
+%wheel\_31\_100\_add\_5550\_0 & 200        & 200        & 200        & 200        \\
+%wheel\_31\_100\_add\_5550\_1 & 200        & 200        & 200        & 200        \\
+%   \bottomrule
+%\end{tabular}
+%\caption{A list of invalid structured dataset for graph coloring problems: dataset2}
+%\label{invalid2}
+%\end{table}
+As more edges are added to the original graphs, graphs will become more complicated. 
+At a certain point, problems will become extremely hard for instances near 
+the phase transition, where some instances are SAT and some are UNSAT.
+In this case, most encodings will time out at a prefixed cutoff time on these instances.
+%The dataset in Table~\ref{invalid2} 
+%shows the performance of four different encodings when enough edges are added to the original graph 
+%so that each of our encodings times out at 200 seconds to decide if the instance is four colorable or not. 
+We think these instances are also invalid because any selected encoding is not able to solve an instance
+from such dataset.
+
+%\begin{table}
+%\scriptsize
+%\centering
+%\begin{tabular}{lrrrr}
+
+%   \toprule
+%    Instance\_id& Time\_enc1& Time\_enc2& Time\_enc3& Time\_enc4\\
+%    \midrule
+%wheel\_31\_100\_add\_5221\_4 & 36.148     & 68.761     & 12.36      & 26.036     \\
+%wheel\_31\_100\_add\_5201\_4 & 73.82      & 21.181     & 12.153     & 20.388     \\
+%wheel\_31\_100\_add\_5221\_1 & 127.896    & 60.519     & 40.263     & 200        \\
+%wheel\_31\_100\_add\_5221\_0 & 10.12      & 62.596     & 20.839     & 131.097    \\
+%wheel\_31\_100\_add\_5206\_8 & 172.251    & 52.866     & 25.725     & 9.824      \\
+%wheel\_31\_100\_add\_5271\_7 & 40.444     & 200        & 25.842     & 26.062     \\
+%wheel\_31\_100\_add\_5256\_1 & 41.038     & 121.091    & 73.82      & 200        \\
+%wheel\_31\_100\_add\_5266\_4 & 9.824      & 200        & 159.171    & 172.251    \\
+%wheel\_31\_100\_add\_5211\_8 & 191.16     & 26.922     & 200        & 49.766     \\
+%wheel\_31\_100\_add\_5231\_6 & 35.056     & 188.418    & 49.678     & 34.571     \\
+%wheel\_31\_100\_add\_5221\_5 & 33.322     & 13.465     & 13.322     & 41.814     \\
+%wheel\_31\_100\_add\_5256\_9 & 200        & 200        & 51.314     & 192.615    \\
+%   \bottomrule
+   
+%\end{tabular}
+%\caption{A list of valid structured dataset for graph coloring problems: dataset3}
+%\label{valid1}
+%\end{table}
+}
+
+In addition to consist only of reasonably hard instances, a valid instance set must evince complementary performance from the selected encodings.
+That is, no encoding must be uniformly better than others, in fact, \emph{each} encoding must have its area of strength when it performs better than others. This is the case of the set of instances in Table~\ref{instances:valid}, when used for the two encodings for the graph colorability problem we discussed earlier and two others that we have not discussed in detail here. Indeed, for the instance $wheel\_31\_100\_add\_5221\_4$, \emph{gc 3} is the best and the \emph{gc 2} is the worst; while for the instance $wheel\_31\_100\_add\_5211\_8$, it is the other way around. We can observe that each instance has its own per-instance best encoding and the order of per-instance best encodings in the table is 3,3,3,1,4,3,1,1,2,4,3,1. In particular, each encoding is the winner on at least one instance.
+
+Building a set of instances of those that are relatively hard (with respect to $T_e$ and $T_{max}$) may still yield a data set that is relatively easy (when execution times, while greater than $T_e$ do not come close to the cutoff time. An additional requirement one might want to impose on a ``good'' set of instances is that each encoding must time out on at least some instances in the set.
+
+We refer by \emph{oracle} to the non-deterministic algorithm that always selects the best en coding to run with a given instance. Typically, oracle's performance is much better than the performance of any individual encoding. This is the case for the data set in Table~\ref{instances:valid}. Thus, the task of selecting correct encodings on a per-instance basis becomes meaningful.
+
+Building sets of reasonably hard instances is difficult. They can be derived from the instances submitted to the past ASP competitions in the NP category, or can be obtained by building random models of instances (the wheel model we discussed is an example) and finding the right settings for the model's parameters. Incorporating some structure in the model (as illustrated by the wheel model) offers a better chance for meaningful instances as purely random instances without any structure are often quite easy. Finally we note that to support encoding selection large data sets are needed. Our experiments suggest that about a thousand instances are enough for traditional machine learning methods, but substantially more for building neural network models.
+
+
+
+\subsection{Performance data}
+%\todo[inline]{Performance data as a name of a section is confusing. To begin with: are we referring here to the box in flowchart named as "Performance" or "Performance 1"? If it is the former then the section is out of place. It has to be discussed prior to "Encoding candidates selection". Also if to look through earlier sections we sprinkle performance discussions and definitions though out. It is better to conglomerate them together, while in parts where we want to refer to these provide a link to the Section where it is discussed in detail. \textcolor{blue}{Now I only keep one performance data;The 2nd one in flowchart is changed to selected performance data}} 
+Performance data represents the effectiveness of different encodings under a chosen ASP solving tool. Performance data is obtained by processing all encodings with all instances, using a selected solver (for instance specific versions of the  \emph{gringo} grounder and the \emph{clasp} solver in some selected configuration).
+%; we used \textcolor{red}{MT: version, configuration} ;\textcolor{red}{Liu: specific version is explained in experimental setup}
+Each individual run should be limited to the selected cutoff time, since some encodings combined with some instances may take a large amount of time before terminating. As explained before (see subsection~\ref{sec:inst}), the platform automatically adjusts cutoff time twice depending on the hardness of the problems and exits with an extremely easy instance set or an extremely hard one. 
+
+\nop{
+Setting a cutoff time depends on the hardware that experiments are performed on, the hardness of benchmark
+instances, and the solving ability of the considered encodings. There are no hard guidelines here but having too few time-outs implies that the set of instances used is too easy. Similarly, having too many time-outs says the set of instances is too hard. In each case, the set of instances has limited use to support effective machine learning. A good practice is it set some bounds for the desired number of time-outs (say, at most 50\% but no fewer than 5\%). To find the right cutoff time, one can start by setting $T$ to some small value that would guarantee fast termination of processing all encodings with all instances. If there are too many timeouts, we increase the cutoff time by the factor of two and repeat. If after a few such iterations we see little decrease in the number of time-outs and the condition of no more than 50\% of time-outs for each encoding has not been met, our set of instances may be too hard and a new set of easier instances must be constructed (smaller size, different setting of parameters used in the instance model). Similarly, if increasing the cutoff time does not .
+
+For example, given an instance set, if any encoding
+can only at most solve 10\% of the instance set on a specific computer when cutoff time is set to T
+seconds, we should consider increasing the cutoff time. If that does not lead to a significant
+increase in the number of solved instances, the data set may simply be too hard and easier
+instances need to be sought. However, if any encoding can solve 100\% of instances when cutoff
+time is set to T seconds, we should consider reducing the cutoff time correspondingly. Cutoff time
+is also set to determine the hardness of an instance. An instance is viewed relatively hard if the
+running time of the instance on any encoding exceeds one fourth of the cutoff time. We set cutoff
+time based on the samples and solve the remaining to collect the performance data of the whole
+set.
+}
+
+Once a valid performance data set is collected, it is used to assess the quality of the encodings used. 
+As noted before, one of the parameters used is the execution time. To compute it, we must 
+account for time-outs. There are several methods commonly used to deal with this issue. One of such
+methods is called PART10. Under PART10 approach, when an instance reaches timeout, we use the
+cutoff time multiplied by ten as the runtime for the instance. For example, when cutoff time is set
+to 200 seconds, the runtime of a timeout instance is set to 2000 seconds. We observe this method
+does not consider how many encodings reach timeout for an instance. A possible improvement
+on the PART10 approach is to take for the runtime of an encoding on a timeout instance
+the cutoff time multiplied by X+1, where X is the number of encodings that time out on this
+instance. We call this method PARX. For example, when this method is used, for the set if instances in Table~\ref{instances:valid}, 
+the penalized runtime for
+$wheel\_31\_100\_add\_5221\_1$ is 400 for encoding 4 and the penalized runtime for
+$wheel\_31\_100\_add\_5256\_9$ is 600 for both encoding 1 and encoding 2.
+
+
+\subsection{Encoding set selection}\label{sec:enccand}
+
+In this stage of the process, the \esp analyzes the performance data obtained for the extended set of encodings. If there are few time-outs, the instance set is deemed too easy and the \esp exists and requests that the user provides a harder set of instances. If there are too many time-outs (even after the initial cutoff time was doubled twice), the instance set is deemed too hard and the user is requested to provide another instance set consisting of ``easier'' instances. 
+
+Otherwise, the system selects a subset of the extended encoding set (no more than six encodings) that consists of encodings that are most effective and that together demonstrate \emph{run-time diversity}. %That is, each encoding in the selected subset outperforms all others on some significant fraction of instances in the instance set.
+
+\nop{
+%However, since the time needed for performance data collection is often significant, it is a good strategy for the user to perform some preliminary experiments on the effectiveness of the encoding and build an input set encodings so that it shows run-time diversity.
+
+\todo[inline]{If to look at flowchart, the diamond to which this section corresponds comes after "Instances"; also if to look within this Section we hardly provide any technical details beyond saying look up other sections. With that I think the subsection on Instances should come first.\textcolor{blue}{I moved it here}} 
+
+\textcolor{blue}{Users can input any set of equivalent encodings. %without knowing the performance of them. 
+However, to collect performance data, the \esp needs to run all encodings on all instances. This process often is time consuming. Therefore, the input encodings must be selected with care and those encodings that never or only sporadically outperform others should not be included in the input set. To put it differently, a desirable feature of a set of encodings is \emph{run-time diversity}. A set of encodings exhibits run-time diversity if each encoding in the set outperforms all others on some significant fraction of instances in the instance set. Given a set of encodings (the input ones and those obtained by rewriting), the \esp will automatically select a subset showing the \emph{run-time diversity}. However, since the time needed for performance data collection is often significant, it is a good strategy for the user to perform some preliminary experiments on the effectiveness of the encoding and build an input set encodings so that it shows run-time diversity.}
+
+Encoding candidates are the outcome of applying rewriting techniques incorporated in the platform to input
+encodings. If several rewriting techniques are applicable to input encodings, a large number of new
+encodings may be generated. The new encodings, along with input encodings, have to be analyzed
+before they are used to create performance prediction models. To this end, performance
+data is generated for each encoding on instances provided by the user (see Section~\ref{sec:inst}. }
+
+
+To estimate the effectiveness of the encoding, we assign it a score. The score is affected by the percentage of the solved instances, the number of instances for which the encoding provided the fastest solution, and the average running time on all solved instances. At least two and up to six encodings (depending on a user specified parameter) are selected. 
+
+\nop{
+Moreover, only encodings with good overall performance will
+be automatically selected to build performance models. \textcolor{blue}{Specifically, each encoding receives a score based on the percentage of solved instances when this encoding is used, the average solving time when this encoding is used, and the number of instances on which an encoding serves as the best for each encoding.
+In particular, as far as the percentage of solved instances is concerned, an encoding with the
+lowest percentage of solved instances only scores one, other encodings score an increasing number according to the rank, and the best encoding scores a number equal to the size of encodings.
+The average runtime of solved instances with each encoding is less important. Encodings are assigned a score from zero to the size minus one to the encoding with maximum runtime and minimum runtime respectively. We also consider the number of instances an encoding serves as the best among all encodings. The more often an encoding works as the best, the larger score it will gain, in a range from one to the size of the encodings.
+By adding all the results together, we select some encodings with highest score as candidate encodings. Since the number of candidates is a parameter, we choose different sizes and group the resulting encodings into different groups. If there are only two encodings after rewriting, only two are selected. If there are more than three encodings, top three up to top six will be selected into different groups. The following processes of features extraction and machine learning building are executed in each group.}}
+
+\subsection{Extract features}
+\todo[inline]{Specify which parts of flowchart are being discussed here; Since flowchart has Phase 1; Phase 2; and Phase 3 annotations; Possibly it makes sense to include these words in descriptions (here and other parts? sya, name sections Phase 1: Instances...) to help the reader to navigate. \textcolor{blue}{The flow chart only contains one 'Extract features' now} }
+In order to support machine learning of performance prediction models for the selected encodings used, as well as building processing schedules, we need to identify features of instances to the problem at hand. Our system relies on two set of features. First, it exploits features that can be defined based on the program obtained by grounding a given instance with a selected encoding. In this we take advantage of the system \emph{claspre} [Potassco]. Second, the platform uses domain specific features designed and input by the user.
+
+
+
+\subsubsection{Claspre features}
+
+\emph{Claspre} is a special version of clasp designed to extract instance features of grounded instances. The extracted features fall into two
+groups: static and dynamic features. Static features contain features about variables, rules, and constraints. For variables, it includes
+the number of problem variables, free problem variables, assigned problem variables, etc. For
+rules, it includes the number of rules, unary rules, choice rules, normal rules, weight rules,
+negative body rules, binary rules, ternary rules, etc. For constraints, it includes the number of
+constraints, binary constraints, ternary constraints, etc. There are in total 38 static features
+computed by \emph{claspre}.
+Dynamic features are extracted when \emph{claspre} performs a short amount of time of search and
+returns the information about solving process. For example, after each restart, certain conflicts
+will happen, and the average number of conflict levels skipped will be recorded as one of the
+dynamic features. There are 25 dynamic features computed by \emph{claspre} at each restart. The
+number of restarts can also be controlled. More restarts result in more features that might be
+more accurate to represent a problem, but the process requires extra runtime.
+
+\subsubsection{Domain features}
+\emph{Claspre} features are oblivious to the nature of the problem represented by the problem. Instance features related or relevant to the problem being solved often provide additional useful characteristic of the the instance and improve the performance of the platform, so it is advised to provide domain features for a better characteristic of an instance. Domain features are based on the structure of an instance. For example, if instances to a problem are graphs, possible features include the number of nodes in a graph, the number of edges, the minimum and maximum degrees, as well as measures reflecting connectivity and reachability properties. The ultimate selection of such features as input to the platform depends on the problem being solved. Different features may be relevant to the problem of graph colorability than those that are relevant to the Hamiltonian Cycle problem. In the Hamiltonian Cycle problem, existence of long paths plays a role and several features related to this property may be derived from running the depth-first search on the instance. Below we provide examples of domain specific features we used when designing encoding selection methods for the that problem.
+
+\begin{itemize}
+\item numOfNodes: the number of nodes in a graph
+\item avgOutDegree: the average of outdegree of nodes
+\item depthDfs1stBackJump: run DFS from node 1, return the depth of first backjump, where the
+algorithm discovers no new nodes
+\item depthBacktoRoot: run DFS from node 1, return the depth of a node that has a back edge to
+node 1.
+\item minDepthBfs: run BFS from node 1, return the depth of the first node that has no outward edges to new nodes.
+\end{itemize}
+
+\subsection{Machine learning modeling}
+The goal of machine learning is to build encoding performance predictors based on performance data and features explained above. Once constructed, they can be used to select the most promising encoding for processing. To build machine learning models, one can use
+regression models or classification models. The former predicts each encoding’s performance expressed as the running time, and then selects the most promising one by comparing the predicted performance. The latter method, by building multi-class machine learning models, directly selects the most promising encoding from a collection of candidate encodings. Our previous experience indicates regression method works better than classification. Therefore, at present the platform supports constructing regression models only.
+
+Hyper-parameters tuning is an important step for correctly training machine learning models. A hyper-parameter is a characteristic of a model. For instance, $k$ in $k$-Nearest Neighbors method is an example of a hyper-parameter. It must be set before the learning process and cannot be estimated from data. A typical
+method to find the optimal hyper-parameter of a model is grid-search. This method defines a
+range for each hyper-parameter, and exhaustively searches through all the possible value of
+hyper-parameters. While grid-search always results in good predictions, it is time consuming and computationally expensive. Another method to search for good settings of hyper-parameters is random search. Instead of a systematic searching through all possible values, it considers only a randomly selected subset. The major benefit is that it decreases the processing time. However, it also decreases the chance of finding the optimal combination of hyper-parameters.
+
+To guarantee the accuracy of a model on the unseen data, cross-validation is used in the phase of
+training machine learning models. After a model is trained on training data, the platform uses validation data
+to estimate how the model is going to perform in general when tested on data not seen in training
+data. This method can help build a less biased model than with only the training and testing set
+partition. The general procedure is as follows. The training dataset is shuffled randomly and split
+it into $k$ groups. For each time, we take one group as a holdout validation set, fit a model on the
+remaining groups, and then evaluate the model on the validation set. The average of
+the $k$ evaluation scores as the model’s generalization skill.
+
+Our preliminary work shows that traditional machine learning methods, such as $k$-Nearest
+Neighbors (kNN), Decision Tree, and Random Forest work well for encoding selection. Therefore,
+we integrated these methods into our prototype.  
+%For example, we can build a CNN model to recognize a Nqueens puzzle. 
+The $k$-nearest neighbors method predicts the value based on the average of $k$ nearest points under
+the predetermined distance metric. The hyper-parameters of the $k$-nearest neighbors are the
+number k of neighbors and the distance metric.
+
+The decision tree is constructed top-down, with the training data divided by axis-parallel splits
+into different rectangular regions where the averages are used for prediction. The splits are
+determined by the highest standard deviation reduction based on the decrease in standard
+deviation after the dataset is split on attributes. The hyper-parameters are the maximum depth
+of the tree, the minimum number of samples still to split, and the mini-mum number of samples
+in a leaf node.
+
+The random forest is created from an ensemble of decision trees that bootstrap various subsamples
+of the original dataset, fit a tree for each, and use averaging to make predictions. The
+random forest can improve predictive accuracy and help control overfitting. Bootstrap is used in
+our decision-tree models. When bootstrap is used, the data for the sub-samples are drawn from
+the original dataset with replacement and all sub-samples are of the same size. The random forest
+method has hyper-parameters concerning constituent decision trees and, in addition, the number
+of trees in a forest.
+
+%Extend the platform by algorithms supporting deep neural network learning is part of the future work.
+
+\begin{table}
+\centering
+\tiny
+\begin{tabular}{lrrr}
+ \toprule
+& Solving Percentage\% & Average Solved Runtime & Number of Wins\\
+\midrule
+\multicolumn{3}{l}{Single encoding performance }                                           \\
+Encoding 1                  & 84.0                & 82.4                   & 25             \\
+Encoding 2                  & 71.2                & 44.0                   & 29             \\
+Encoding 3                  & 56.4                & 30.7                   & 20             \\
+Encoding 4                  & 78.8                & 38.6                   & 28             \\
+Encoding 5                  & 57.1                & 35.4                   & 26             \\
+Encoding 6                  & 79.4                & 48.1                   & 26             \\
+\midrule
+ \multicolumn{3}{l}{Oracle performance     }                                                \\
+Oracle                      & 98.7                & 21.1                   &                \\
+   \bottomrule
+   
+\end{tabular}
+\caption{Performance report for individual encoding and the \emph{oracle} selection}
+\label{performance_report}
+\end{table}
+
+The performance of machine learning models is compared with individual encodings and the
+oracle selection. For example, for the Hamiltonian cycle problem, we report the performance in
+Table~\ref{performance_report}.
+For each encoding, the table lists the percentage of solved instances from the test set (the solved
+percentage), the average solved runtime and the number of times that encoding had the smallest
+runtime (was the “winner”). We use the solved percentage as the primary evaluation metric, and
+the average runtime as the secondary one. The best individual encoding Encoding 1 solves 84.0\%
+of test instances. However, even though Encoding 1 solves most instances, it also has the highest
+average running time. Encoding 3 is the fastest in terms of average runtime, but it only solves
+78.8\% of instances. Overall, the results show that the encodings in the experiment have
+complementary strengths, with each of them being the best one with some frequency. The table
+also presents the oracle selection performance (always select and run the best encoding for an
+instance). It solves 98.7\% of instances, with an average runtime of 21.1. Compared with Encoding
+1, the best of the six encodings, the always-select-best selection method solves 14.7\% more
+instances. We note that 98.7\% is the upper bound for the performance that could be achieved by
+encoding selection. It indicates the potential for an intelligent encoding selection method to
+outperform individual encodings.
+
+
+
+\subsection{Evaluation}
+In the sections above, we explained the important procedures to generate schedules, interleaving
+schedules, machine learning models. The next step is to estimate the performance of these
+important components and decide which one to use later when a new instance set comes. The
+procedure of the evaluation is similar to the validation of machine learning models. We divide
+the instance set into training, validation, and test sets. We use the training set to build schedules, interleaving schedules, and machine learning models predicting encoding performance. We then evaluate their effectiveness on the validation set and select the method that solves the largest number of instances from that set. This method is the outcome of the platform for the inputs provided by the user, most importantly, a set of problem encodings and a data set of instances.
+
+
+%\subsection{Applying into new instances}
+Once the platform computes and selects the method, it will use it to solve the problem on new instances. That is, given a new instance, it will apply the method generated above in solving. If the platform identifies the computed encoding selection method as the best one, the platform extracts features of the instance, predicts the best encoding based on the extracted instance features. Then the system applies the solver to the instance combined with the best predicted encoding. On the other hand, if the selected method is a schedule or an interleaving schedule, feature extraction is not needed. The solver will be applied to the instance, combining it with the encodings in the schedule.
+
+The test set, which consists of instance that have not been seen yet, is used to evaluate the performance of the platform on new instances.
