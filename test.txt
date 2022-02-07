@@ -1,4 +1,4 @@
-\section{The encoding selection platform \esp}
+\section{The encoding selection platform \esp 2}
 %\begin{figure*}
 %\centering
 %\includegraphics[width=0.8\textwidth]{flowchart.png}
@@ -6,117 +6,51 @@
 %\label{flowchart-figure}
 %\end{figure*}
 
+
 \begin{figure*}
 \centering
 \scalebox{0.55}{
-\begin{tikzpicture} [node distance=2cm]
+\begin{tikzpicture} [node distance=3cm]
 % We will draw our flowchart here
-\node (Encodings) [input] {Encodings};
-\node (Rewrite) [process,below of = Encodings] {Rewrite};
-\node (Rewriting Tools) [system,left of = Rewrite, xshift=-4cm] {Rewriting Tools};
-\node (All Encodings)[result, below of = Rewrite]{All Encodings};
-\node (Instances) [input, right of= All Encodings, xshift= 15cm] {Instances}; 
-\node (Initial Cutoff Time) [input, below of= Instances,xshift= -3cm] {Initial Cutoff Time};
-\node (Cuoff Time Node) [coordinate, on grid,left of = Initial Cutoff Time,xshift= -2cm];
-\node (Collect Performance Data) [process,left of = Initial Cutoff Time,xshift= -6cm] {Collect\\Performance};
-\node (Too Hard?) [process,below of = Collect Performance Data,yshift= -0.6cm] {Too Hard?};
-\node (Third Update?) [process,right of = Too Hard?,xshift= 2cm] {Third\\Update?};
-\node (Exit! Instances Too Hard!) [exit,right of= Third Update?,xshift= 2cm] {Exit!\\Instances\\Too\\Hard!};
-\node (Too Easy) [process,below of = Too Hard?,yshift= -0.6cm] {Too Easy?};
-\node (Exit! Instances Too Easy!) [exit,below of= Exit! Instances Too Hard!,yshift= -0.6cm] {Exit!\\Instances\\Too\\Easy!};
-\node (Performance Data) [result,below of = Too Easy] {Performance\\Data};
-\node (Select Candidate) [process,below left of = Performance Data,yshift=-0.6cm,xshift=-2cm] {Select\\Candidate};
-\node (Select Candidate Node) [coordinate, on grid, below of =Select Candidate,yshift= 0.5cm];
-\node (Selected Performance Data) [result,below of = All Encodings,yshift=-13cm] {Selected\\Performance\\Data};
-\node (Candidate Encodings Group1) [result,right of = Selected Performance Data,xshift=4cm] {Candidate\\Encodings\\Group1};
-\node (Candidate Encodings Group2) [result,right of = Candidate Encodings Group1,xshift=2cm] {Candidate\\Encodings\\Group2};
-\node (Candidate Encodings Group3) [right of = Candidate Encodings Group2,xshift=2cm] {. . .};
-\node (Candidate Encodings Group4) [result,right of = Candidate Encodings Group3,xshift=2cm] {Candidate\\Encodings\\Group4};
-\node (Claspre Feature Generator) [system,below of = Candidate Encodings Group3] {Claspre Feature\\Generator};
-\node (Extract Features) [process,below of =Claspre Feature Generator] {Extract\\Features};
-\node (Extract Features Node) [coordinate, on grid, right of =Extract Features,xshift=4cm,yshift=0cm];
-\node (Features) [result,below of =Extract Features] {Features};
-\node (Domain Features) [input,right of =Features,xshift=2cm] {Domain Features};
-\node (Training Set) [result,left of =Features,xshift=-6cm] {Training Set};
-\node (Validation Set) [result,left of =Training Set,xshift=-4cm] {Validation Set};
-\node (Validation Set Node) [coordinate, on grid,on grid,above of=Validation Set,yshift=-1cm];
-\node (Test Set) [result,left of =Validation Set,xshift=-4cm] {Test Set};
-\node (Build ML) [process,below of =Candidate Encodings Group2,yshift=-6cm] {Build ML};
-\node (ML Models) [result,below of =Build ML] {ML Models};
-\node (Evaluate) [process,left of =ML Models,xshift=-5cm] {Evaluate};
-\node (Solution) [result,below of =Evaluate] {Solution};
-\node (Test) [process,left of =Solution,xshift=-4cm] {Test};
-\node (Test Result) [result,below of =Test] {Test Result};
+\node (Encodings Input ) [ ] {Encodings (Input) };
+\node (Encoding Rewriting) [result,below of = Encodings Input ] {Encoding\\Rewriting};
+\node (Rewriting Tools) [ left of = Encoding Rewriting, xshift=-2cm] {Rewriting Tools};
+\node (Performance Data Collection) [result,below of = Encoding Rewriting] {Performance\\Data\\Collection};
+\node (Instances Input ) [ , right of= Collect Performance Data, xshift= 4cm] {Instances (Input) }; 
+\node (Timeout Coord)[coord,right of= Collect Performance Data,xshift= 0 cm];
+\node (Encoding Candidate Generation) [result,below of = Performance Data Collection] {Encoding\\Candidate\\Generation};
+\node (Encoding Candidate Generation Coord) [coord,left of = Encoding Candidate Generation,xshift=-4cm];
+\node (Encoding Candidate Generation Coord0) [coord,below of = Performance Data Collection,yshift=2cm];
+\node (Feature Extraction) [result,below of = Encoding Candidate Generation] {Feature\\Extraction};
+\node (Claspre) [,left of = Feature Extraction,xshift=-1cm] {Claspre};
+\node (ML Modeling) [result,below of = Feature Extraction] {ML\\Modeling};
+\node (Encoding Selection) [result,below of = ML Modeling] {Encoding\\Selection\\Per-instance};
+\node (New Instances) [left of = Encoding Selection, xshift=-4cm] {New Instance};
+\node (Solve) [result,right of = Encoding Selection,xshift= 4cm] {ASP Solving};
+\node (Result) [right of = Solve,xshift= 2cm] {Solution};
 
+\draw [arrow]  (Encodings Input ) -- (Encoding Rewriting);
+\draw [arrow] (Rewriting Tools) -- (Encoding Rewriting);
+\draw [arrow] (Encoding Rewriting) -- node[anchor=east,pos=0.5]{Extended Encoding Set}(Performance Data Collection);
+\draw [arrow] (Instances Input ) -- node[anchor=south,pos=0.7]{Initial Cutoff Time (Input)}(Performance Data Collection);
+\draw [arrow] (Performance Data Collection) -- node[anchor=east,pos=0.5]{Performance Data}(Encoding Candidate Generation);
 
-
-\node (input explain) [input,below of=Rewriting Tools, yshift=-5cm] {} ;
-\node [right of =input explain,xshift=0.7cm]{Inputs};
-\node (system explain) [system,below of=input explain] {} ;
-\node [align=center,right of =system explain,xshift=0.7cm]{System\\Tools};
-\node (process explain) [process,below of=system explain] {} ;
-\node [right of =process explain,xshift=0.7cm]{Processes};
-\node (result explain) [result,below of=process explain] {} ;
-\node [align=center,right of =result explain,xshift=0.7cm]{(Intermediate)\\Results};
-\node (error explain) [exit,below of=result explain,minimum size=1.5 cm] {} ;
-\node [align=center,right of =error explain,xshift=0.7cm]{Errors};
-
-
-\draw [arrow]  (Encodings) -- (Rewrite);
-\draw [arrow] (Rewriting Tools) -- (Rewrite);
-\draw [arrow] (Rewrite) -- (All Encodings);
-\draw [arrow] (All Encodings) |-(Collect Performance Data);
-\draw [arrow] (Instances) -|(Collect Performance Data);
-\draw [arrow] (Initial Cutoff Time) --(Collect Performance Data);
-\draw [arrow] (Collect Performance Data) --(Too Hard?);
-\draw [arrow] (Too Hard?)--node[anchor=south,pos=0.2]{Y}(Third Update?);
-\draw [arrow] (Third Update?)--node[anchor=west,pos=0.2]{N}node[anchor=east]{Increase Cutoff}(Cuoff Time Node);
-\draw [arrow] (Third Update?)--node[anchor=south,pos=0.2]{Y}(Exit! Instances Too Hard!);
-\draw [arrow] (Too Hard?)--node[anchor=east,pos=0.2]{N}(Too Easy);
-\draw [arrow] (Too Easy)--node[anchor=south,pos=0.03]{Y}(Exit! Instances Too Easy!);
-\draw [arrow] (Too Easy)--node[anchor=east,pos=0.2]{N}(Performance Data);
-\draw [arrow] (Performance Data)|-(Select Candidate);
-\draw [arrow] (All Encodings)|-(Select Candidate);
-\draw (Select Candidate) -- (Select Candidate Node);
-\draw [arrow] (Select Candidate Node)-|(Selected Performance Data);
-\draw [arrow] (Select Candidate Node)-|(Candidate Encodings Group1);
-\draw [arrow] (Select Candidate Node-|(Candidate Encodings Group1)-|(Candidate Encodings Group2);
-%\draw [arrow] (Select Candidate Node-|(Candidate Encodings Group1)-|(Candidate Encodings Group3);
-\draw [arrow] (Select Candidate Node-|(Candidate Encodings Group1)-|(Candidate Encodings Group4);
-
-\draw [arrow] (Claspre Feature Generator)--(Extract Features);
-\draw (Instances)-|(Extract Features Node);
-\draw [arrow] (Extract Features Node)--(Extract Features);
-\draw [arrow] (Candidate Encodings Group2)|-(Extract Features);
-\draw (Candidate Encodings Group1)|-(Candidate Encodings Group2 |-Extract Features);
-\draw [arrow] (Candidate Encodings Group4)|-(Extract Features);
-\draw [arrow] (Extract Features)--(Features);
-\draw [arrow] (Domain Features)--(Features);
-\draw (Selected Performance Data)--(Validation Set Node) ;
-\draw [arrow](Validation Set Node)--(Validation Set);
-\draw [arrow](Validation Set Node)-|(Test Set);
-\draw [arrow](Validation Set Node)-|(Training Set);
-
-\draw [arrow](Training Set)|-(Build ML);
-\draw [arrow](Features)|-(Build ML);
-\draw [arrow](Build ML)--(ML Models);
-\draw [arrow](ML Models)--(Evaluate);
-\draw [arrow](Validation Set)|-(Evaluate);
-\draw [arrow](Evaluate)--(Solution);
-\draw [arrow](Solution)--(Test);
-\draw [arrow](Test Set)|-(Test);
-\draw [arrow](Test)--(Test Result);
-\draw [arrow](Exit! Instances Too Hard!)--node[anchor=east]{Input new cutoff}(Initial Cutoff Time);
-\draw [arrow](Exit! Instances Too Hard!)-|node[anchor=west,align=center]{Upload\\New\\Instances}(Instances);
-\draw [arrow](Exit! Instances Too Easy!)-|node[anchor=north]{}(Instances);
-%\caption{A flowchart to the encoding selection platform}
-%label{flowchart-figure}
+\draw [arrow] (Encoding Candidate Generation Coord0) -|node[anchor=south,pos=0.3,align=right]{Exit! Increase Cutoff Time}node[anchor=north,pos=0.3,align=left]{Exit! Adjust Instances}(Timeout Coord);
+\draw [arrow] (Encoding Candidate Generation) -- node[anchor=east,pos=0.5]{Selected Encoding Set}(Feature Extraction);
+\draw [arrow] (Claspre) -- (Feature Extraction);
+\draw [arrow] (Instances Input ) |- node[anchor=south,pos=0.85]{Domain Features (Input; Optional)}(Feature Extraction);
+\draw [arrow] (Feature Extraction) -- node[anchor=east,pos=0.5]{Instance Features} (ML Modeling);
+\draw (Encoding Candidate Generation)--(Encoding Candidate Generation Coord);
+\draw [arrow] (Encoding Candidate Generation Coord) |- node[anchor=east,pos=0.25,align=right]{Selected\\Performance\\Data} (ML Modeling);
+\draw [arrow] (ML Modeling) -- node[anchor=east,pos=0.5]{Prediction Models} (Encoding Selection);
+\draw [arrow] (New Instances) --node[anchor=south,pos=0.5]{Extract Features} (Encoding Selection);
+\draw [arrow] (Encoding Selection) -- node[anchor=south,pos=0.5]{Selected Encoding} (Solve);
+\draw [arrow] (Solve) -- (Result);
 \end{tikzpicture};
 }
-\caption{A flowchart to the encoding selection platform}
-\label{flowchart-figure}
+\caption{A flowchart to the encoding selection platform (New)}
+\label{flowchart-figure2}
 \end{figure*}
-
 The flowchart in Figure~\ref{flowchart-figure} shows the architecture and processes involved in the encoding selection platform that we call \esp.
 \textcolor{blue}{The rectangular boxes in bold represent inputs that need to be provided by the user. They include encodings for a problem to be solved, instances of the problem, and domain/application specific  features if available. The regular rectangular boxes represent system tools, which include encoding rewriting tools and \emph{claspre} feature generator\footnote{\emph{claspre} is a sub-component of portfolio answer set solver \emph{claspfolio}; it is available as a stand alone tool at \url{https://potassco.org/labs/claspre/}}~\cite{gekakascsczi11a}. Components shown using diamond shapes denote processes, which include encoding rewriting, performance collection, candidate encoding selection, feature extraction, performance models building based on machine learning, system evaluation, and system test.}
 Components shown using rectangles with rounded corners denote intermediate and final outcomes of several processes supported by the platform. 
@@ -132,7 +66,8 @@ illustrate functions of the building blocks of the \esp architecture.
 In what follows we explain important aspects of the \esp system in detail. We touch on important components that concern input provided to the system as well as distinct processes within the system. In particular, we describe
  encodings (input), encoding rewriting tools, encoding candidate generation, instances (input), performance data collection, feature generation, schedule building, machine learing model building, system evaluation, and system testing.
 
-\subsection{Encodings}
+\subsection{Encoding Rewriting}
+\subsubsection{Encodings}
 The \esp expects a user to supply at least one (ASP)  encoding  for considered problem~$P$.
 In most cases, the user will supply several encodings for the problem. 
 The supplied encodings are rewritten by means of encoding rewriting tools available in the platform (detailed in Subsection~\ref{sec:encrewr}) and other rewriting tools supplied by the user. The \emph{extended set of encodings} (the input and the ones resulting rewriting) are the basis for further processing that aims to select a subset of no more than six encodings that will be used when solving new instances of problem~$P$. We comment on how performance data guides the selection process implemented in the \esp later in the paper.
@@ -240,7 +175,7 @@ reach(1).
 %These encodings only differ in one line that changes the way the %concept of reachability is implemented.
 
 
-\subsection{Encoding rewriting tools}\label{sec:encrewr}
+\subsubsection{Encoding rewriting tools}\label{sec:encrewr}
 The current version of the \esp supports a rewriting tool \emph{AAgg}~\cite{aagg20}.
 It is used to  generate additional encodings based on the ones originally provided by the user. 
 The \emph{AAgg} system performs rewritings on non-ground programs.
@@ -335,8 +270,8 @@ Third, the new \emph{AAgg} can in some cases remove rules with the aggregate {\t
 
 In the future, we will incorporate in the \esp other rewriting tools, such as \emph{Projector}~\cite{nick19} and \emph{Lpopt}~\cite{bic16}.
 
-
-\subsection{Instances}\label{sec:inst}
+\subsection{Performance Data Collection}
+\subsubsection{Instances}\label{sec:inst}
 Benchmark instances must be provided by the user. They are used to extract data on the performance of a solver on each of the selected encodings, to support feature extraction and to form the training and testing sets used by machine learning tools to build and evaluate encoding performance models.
 
 %\textcolor{blue}{Benchmark instances should be generated with care by users and users may be requested to provide new data set according to the performance data collected by the platform. After users upload their instances and encodings and set an initially estimated cutoff time. The platform starts to perform encodings rewriting and collect performance data while automatically adjusting cutoff time two times according to the hardness of the problems. The platform will continue with next step with a valid dataset or exit with an invalid one. If the system exits, users need to provide a new instance set according to the system failure output. The invalid instance set is a set of instances that are either too easy or too hard.} 
@@ -499,7 +434,7 @@ Building sets of reasonably hard instances is difficult. They can be derived fro
 
 
 
-\subsection{Performance data}
+\subsubsection{Performance data}
 %\todo[inline]{Performance data as a name of a section is confusing. To begin with: are we referring here to the box in flowchart named as "Performance" or "Performance 1"? If it is the former then the section is out of place. It has to be discussed prior to "Encoding candidates selection". Also if to look through earlier sections we sprinkle performance discussions and definitions though out. It is better to conglomerate them together, while in parts where we want to refer to these provide a link to the Section where it is discussed in detail. \textcolor{blue}{Now I only keep one performance data;The 2nd one in flowchart is changed to selected performance data}} 
 Performance data represents the effectiveness of different encodings under a chosen ASP solving tool. Performance data is obtained by processing all encodings with all instances, using a selected solver (for instance specific versions of the  \emph{gringo} grounder and the \emph{clasp} solver in some selected configuration).
 %; we used \textcolor{red}{MT: version, configuration} ;\textcolor{red}{Liu: specific version is explained in experimental setup}
@@ -536,11 +471,11 @@ $wheel\_31\_100\_add\_5221\_1$ is 400 for encoding 4 and the penalized runtime f
 $wheel\_31\_100\_add\_5256\_9$ is 600 for both encoding 1 and encoding 2.
 
 
-\subsection{Encoding set selection}\label{sec:enccand}
+\subsection{Encoding Candidate Selection}\label{sec:enccand}
 
 In this stage of the process, the \esp analyzes the performance data obtained for the extended set of encodings. If there are few time-outs, the instance set is deemed too easy and the \esp exists and requests that the user provides a harder set of instances. If there are too many time-outs (even after the initial cutoff time was doubled twice), the instance set is deemed too hard and the user is requested to provide another instance set consisting of ``easier'' instances. 
 
-Otherwise, the system selects a subset of the extended encoding set (no more than six encodings) that consists of encodings that are most effective and that together demonstrate \emph{run-time diversity}. %That is, each encoding in the selected subset outperforms all others on some significant fraction of instances in the instance set.
+Otherwise, the system selects a subset of the extended encoding set (no more than six encodings) that demonstrates \emph{run-time diversity}. That is, each encoding in the selected subset outperforms all others on some significant fraction of instances in the instance set.
 
 \nop{
 %However, since the time needed for performance data collection is often significant, it is a good strategy for the user to perform some preliminary experiments on the effectiveness of the encoding and build an input set encodings so that it shows run-time diversity.
@@ -557,17 +492,14 @@ before they are used to create performance prediction models. To this end, perfo
 data is generated for each encoding on instances provided by the user (see Section~\ref{sec:inst}. }
 
 
-To estimate the effectiveness of the encoding, we assign it a score. The score is affected by the percentage of the solved instances, the number of instances for which the encoding provided the fastest solution, and the average running time on all solved instances. At least two and up to six encodings (depending on a user specified parameter) are selected. 
-
-\nop{
 Moreover, only encodings with good overall performance will
 be automatically selected to build performance models. \textcolor{blue}{Specifically, each encoding receives a score based on the percentage of solved instances when this encoding is used, the average solving time when this encoding is used, and the number of instances on which an encoding serves as the best for each encoding.
 In particular, as far as the percentage of solved instances is concerned, an encoding with the
 lowest percentage of solved instances only scores one, other encodings score an increasing number according to the rank, and the best encoding scores a number equal to the size of encodings.
 The average runtime of solved instances with each encoding is less important. Encodings are assigned a score from zero to the size minus one to the encoding with maximum runtime and minimum runtime respectively. We also consider the number of instances an encoding serves as the best among all encodings. The more often an encoding works as the best, the larger score it will gain, in a range from one to the size of the encodings.
-By adding all the results together, we select some encodings with highest score as candidate encodings. Since the number of candidates is a parameter, we choose different sizes and group the resulting encodings into different groups. If there are only two encodings after rewriting, only two are selected. If there are more than three encodings, top three up to top six will be selected into different groups. The following processes of features extraction and machine learning building are executed in each group.}}
+By adding all the results together, we select some encodings with highest score as candidate encodings. Since the number of candidates is a parameter, we choose different sizes and group the resulting encodings into different groups. If there are only two encodings after rewriting, only two are selected. If there are more than three encodings, top three up to top six will be selected into different groups. The following processes of features extraction and machine learning building are executed in each group.}
 
-\subsection{Extract features}
+\subsection{Feature Extraction}
 \todo[inline]{Specify which parts of flowchart are being discussed here; Since flowchart has Phase 1; Phase 2; and Phase 3 annotations; Possibly it makes sense to include these words in descriptions (here and other parts? sya, name sections Phase 1: Instances...) to help the reader to navigate. \textcolor{blue}{The flow chart only contains one 'Extract features' now} }
 In order to support machine learning of performance prediction models for the selected encodings used, as well as building processing schedules, we need to identify features of instances to the problem at hand. Our system relies on two set of features. First, it exploits features that can be defined based on the program obtained by grounding a given instance with a selected encoding. In this we take advantage of the system \emph{claspre} [Potassco]. Second, the platform uses domain specific features designed and input by the user.
 
@@ -686,12 +618,8 @@ instance). It solves 98.7\% of instances, with an average runtime of 21.1. Compa
 instances. We note that 98.7\% is the upper bound for the performance that could be achieved by
 encoding selection. It indicates the potential for an intelligent encoding selection method to
 outperform individual encodings.
-
-
-
-\subsection{Evaluation}
-In the sections above, we explained the important procedures to generate schedules, interleaving
-schedules, machine learning models. The next step is to estimate the performance of these
+dd
+Since we explained the important  procedures to generate schedules, interleaving schedules, machinelearning models, the next step is to estimate the performance of these
 important components and decide which one to use later when a new instance set comes. The
 procedure of the evaluation is similar to the validation of machine learning models. We divide
 the instance set into training, validation, and test sets. We use the training set to build schedules, interleaving schedules, and machine learning models predicting encoding performance. We then evaluate their effectiveness on the validation set and select the method that solves the largest number of instances from that set. This method is the outcome of the platform for the inputs provided by the user, most importantly, a set of problem encodings and a data set of instances.
